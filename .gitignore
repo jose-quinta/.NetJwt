@@ -1,0 +1,105 @@
+# User-specific files
+*.user
+*.useross
+*.suo
+*.userosscache
+
+# Other files
+Server/bin/
+Server/obj/
+
+# Visual Studio Code files
+.vscode/
+*.code-workspace
+
+# Visual Studio files
+.vs/
+*.vsprops
+*.vsp
+*.vspx
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[B]in/
+[O]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio code coverage files
+*.codecoverage
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Test results
+[Tt]estResults/
+[A-Z]_*_Errors.log
+logs/
+
+# Builds
+*.log
+*.msbuild.log
+*.msbuildimpl.log
+*.InstallState.log
+
+# .NET
+*.dll
+*.exe
+*.pdb
+*.dll.mdb
+*.exe.mdb
+
+# VS Cache
+.vs/
+
+# Mono
+*.pidb
+*.userprefs
+
+# Pub
+*.pubcache
+
+# Node
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# Secrets - DO NOT COMMIT
+appsettings.json
+!appsettings.Development.json
+!appsettings.Production.json
+*.local.json
+secret.json
+credentials.json
+*.pfx
+*.key
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
