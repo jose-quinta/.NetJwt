@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using Server.Infrastructure.Persistence;
 
 namespace Server.Infrastructure.Persistence {
     public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext> {
@@ -13,9 +12,9 @@ namespace Server.Infrastructure.Persistence {
 
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             var connectionString = config.GetConnectionString("DefaultConnection");
-
+            #pragma warning disable CS8604
             optionsBuilder.UseSqlServer(connectionString);
-
+            #pragma warning restore CS8604
             return new ApplicationDbContext(optionsBuilder.Options);
         }
     }

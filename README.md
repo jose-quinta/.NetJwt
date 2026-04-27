@@ -12,64 +12,81 @@ ASP.NET Core 6 Web API con autenticación JWT y arquitetura limpia.
 | Base de datos | SQL Server |
 | Validación | FluentValidation 11.7.1 |
 | Documentación API | Swashbuckle (Swagger) |
+| Logging | Microsoft.Extensions.Logging |
 
 ## Características
 
 - Registro de usuarios
 - Login con JWT
-- Refresh Tokens (7 días de validez)
-- Access Tokens (15 minutos de validez)
+- Refresh Tokens (7 días de validade)
+- Access Tokens (15 minutos de validade)
 - Autorización por roles
 - Password hashing con HMACSHA512
 - Validación de entrada con FluentValidation
 - Seeder automático de usuario admin
 - Endpoints protegidos con `[Authorize]`
+- Manejo de errores global con middleware
+- Logging configurado
 
 ## Arquitectura
 
 ```
-Clean Architecture
+Clean Architecture (Multi-Project)
 ├── Domain/           (Entidades)
 ├── Application/      (Lógica de negocio, DTOs, Interfaces)
 ├── Infrastructure/   (DbContext, Repository, UnitOfWork)
-└── Presentation/    (Controllers)
+└── Api/            (Controllers, Program, Middleware)
 ```
 
 ## Patrones de Diseño
 
 - **Repository Pattern**: Acceso a datos genérico con caché
-- **Unit of Work**: Transaccionescentralizadas
+- **Unit of Work**: Transacciones centralizadas
 - **Dependency Injection**: Inyección de dependencias
-- **DTOs**: Separaciónrequest/response
+- **DTOs**: Separación request/response
+- **Middleware**: Manejo global de errores
 
 ## Estructura de Archivos
 
 ```
 Server/
-├── Domain/
-│   └── Entities/
-│       ├── User.cs
-│       └── RefreshToken.cs
+├── Api/
+│   ├── Controllers/
+│   │   └── AuthController.cs
+│   ├── Middleware/
+│   │   └── ErrorHandlingMiddleware.cs
+│   ├── Extensions/
+│   │   └── ApplicationBuilderExtensions.cs
+│   ├── Program.cs
+│   └── Api.csproj
 ├── Application/
 │   ├── DTOs/
 │   │   └── AuthDtos.cs
 │   ├── Validators/
 │   │   └── AuthValidators.cs
 │   ├── Interfaces/
-│   │   └── IUnitOfWork.cs
+│   │   ├── IAuthService.cs
+│   │   ├── IUnitOfWork.cs
+│   │   ├── IRepository.cs
+│   │   ├── IConfigService.cs
+│   │   └── IUserContext.cs
 │   └── Services/
 │       └── AuthService.cs
-├── Infrastructure/
-│   └── Persistence/
-│       ├── ApplicationDbContext.cs
-│       ├── Repository.cs
-│       ├── UnitOfWork.cs
-│       └── DatabaseSeeder.cs
-├── Presentation/
-│   └── Controllers/
-│       └── AuthController.cs
-├── Program.cs
-└── Server.csproj
+├── Domain/
+│   └── Entities/
+│       ├── User.cs
+│       └── RefreshToken.cs
+└── Infrastructure/
+    ├── Persistence/
+    │   ├── ApplicationDbContext.cs
+    │   ├── ApplicationDbContextFactory.cs
+    │   └── Seeders/
+    │       └── DatabaseSeeder.cs
+    └── Repositories/
+        ├── Repository.cs
+        ├── UnitOfWork.cs
+        ├── ConfigService.cs
+        └── UserContext.cs
 ```
 
 ## Endpoints
@@ -107,37 +124,30 @@ Variables de entorno en `appsettings.json`:
 ## Comandos
 
 ```bash
-# Restaurar dependencias
-dotnet restore
-
-# Compilar
-dotnet build
+# Compilar proyecto
+dotnet build Server/Api/Api.csproj
 
 # Correr proyecto
-dotnet run
+dotnet run --project Server/Api/Api.csproj
 
 # Crear migración
-dotnet ef migrations add InitialCreate
+dotnet ef migrations add InitialCreate --project Server/Infrastructure/Infrastructure.csproj
 
 # Actualizar base de datos
-dotnet ef database update
+dotnet ef database update --project Server/Infrastructure/Infrastructure.csproj
 ```
-
-## Migraiones
-
-Las migraciones se almacenan en `Server/Infrastructure/Persistence/Migrations/`.
 
 ## Mejoras Futuras
 
 ### Alta Prioridad
 - [ ] Implementar CQRS con MediatR
-- [ ] Agregar logging centralizado (Serilog)
-- [ ] Error handling global con middleware
+- [ ] Agregar Serilog para logging más completo
+- [ ] Implementar Refresh Token rotación
 - [ ] Rate limiting
 
 ### Media Prioridad
+- [ ] **Usar `IdentityUser` de Microsoft.AspNetCore.Identity** - Reemplazar la entidad User personalizada por IdentityUser para seguir los estándares de .NET y obtener características como: gestión de usuarios, roles, confirmaciones de email, reset de password, autenticación de dos factores, protección contra ataques, etc.
 - [ ] Tests unitarios (xUnit/NUnit)
-- [ ] Implementar Refresh Token rotación
 - [ ] Email validation
 - [ ] Two-Factor Authentication (2FA)
 - [ ] Password reset por email

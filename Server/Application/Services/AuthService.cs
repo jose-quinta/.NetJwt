@@ -9,18 +9,18 @@ using Server.Domain.Entities;
 namespace Server.Application.Services {
     public class AuthService : IAuthService {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfigService _configService;
+        private readonly IUserContext _userContext;
 
-        public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration, IHttpContextAccessor httpContextAccessor) {
+        public AuthService(IUnitOfWork unitOfWork, IConfigService configService, IUserContext userContext) {
             _unitOfWork = unitOfWork;
-            _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
+            _configService = configService;
+            _userContext = userContext;
         }
 
         public async Task<(User? User, string? Error)> RegisterAsync(RegisterRequest request) {
             var userRepo = _unitOfWork.GetRepository<User>();
-            
+
             if (await userRepo.FirstOrDefaultAsync(u => u.Email == request.Email) != null)
                 return (null, "El email ya está registrado");
 
@@ -108,7 +108,7 @@ namespace Server.Application.Services {
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
-                _configuration.GetSection("AppSettings:Token").Value!));
+                _configService.GetValue("AppSettings:Token")));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
@@ -139,8 +139,6 @@ namespace Server.Application.Services {
             return computedHash.SequenceEqual(passwordHash);
         }
 
-        private string GetClientIpAddress() {
-            return _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        }
+        private string GetClientIpAddress() => _userContext.GetClientIp();
     }
 }

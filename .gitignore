@@ -1,12 +1,18 @@
+# .NET
+Server/Domain/bin/
+Server/Domain/obj/
+Server/Application/bin/
+Server/Application/obj/
+Server/Infrastructure/bin/
+Server/Infrastructure/obj/
+Server/Api/bin/
+Server/Api/obj/
+
 # User-specific files
 *.user
 *.useross
 *.suo
 *.userosscache
-
-# Other files
-Server/bin/
-Server/obj/
 
 # Visual Studio Code files
 .vscode/
@@ -102,4 +108,3 @@ logs/
 *.tmp
 *.temp
 ~*
-
