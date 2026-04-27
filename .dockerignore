@@ -1,0 +1,35 @@
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# .NET
+bin/
+obj/
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+
+# Secrets
+*.pfx
+*.key
+appsettings.*.json
+!appsettings.Development.json

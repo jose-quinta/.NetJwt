@@ -101,11 +101,17 @@ namespace Server.Application.Services {
         }
 
         private string CreateToken(User user) {
+            var permissions = GetPermissionsForRole(user.Role);
+            
             var claims = new List<Claim> {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role)
             };
+
+            foreach (var permission in permissions) {
+                claims.Add(new Claim("Permission", permission));
+            }
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
                 _configService.GetValue("AppSettings:Token")));
@@ -118,6 +124,24 @@ namespace Server.Application.Services {
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private List<string> GetPermissionsForRole(string role) {
+            return role switch {
+                "Admin" => new List<string> {
+                    "ReadUsers", "WriteUsers", "DeleteUsers",
+                    "ReadProducts", "WriteProducts", "DeleteProducts",
+                    "ManageRoles"
+                },
+                "Moderator" => new List<string> {
+                    "ReadUsers", "WriteUsers",
+                    "ReadProducts", "WriteProducts", "DeleteProducts"
+                },
+                "User" => new List<string> {
+                    "ReadProducts"
+                },
+                _ => new List<string>()
+            };
         }
 
         private string CreateRefreshToken() {
