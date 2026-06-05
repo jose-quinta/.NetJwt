@@ -10,7 +10,9 @@ namespace Server.Application.Validators {
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email es requerido")
-                .EmailAddress().WithMessage("Email inválido");
+                .EmailAddress().WithMessage("Email inválido")
+                .Matches(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                .WithMessage("El email debe tener un formato válido (ej: usuario@dominio.com)");
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password es requerido")
@@ -22,7 +24,9 @@ namespace Server.Application.Validators {
         public LoginRequestValidator() {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email es requerido")
-                .EmailAddress().WithMessage("Email inválido");
+                .EmailAddress().WithMessage("Email inválido")
+                .Matches(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                .WithMessage("El email debe tener un formato válido (ej: usuario@dominio.com)");
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password es requerido");
@@ -33,6 +37,23 @@ namespace Server.Application.Validators {
         public RefreshTokenRequestValidator() {
             RuleFor(x => x.RefreshToken)
                 .NotEmpty().WithMessage("RefreshToken es requerido");
+        }
+    }
+
+    public class VerifyEmailRequestValidator : AbstractValidator<VerifyEmailRequest> {
+        public VerifyEmailRequestValidator() {
+            RuleFor(x => x.Token)
+                .NotEmpty().WithMessage("Token es requerido");
+        }
+    }
+
+    public class ResendConfirmationRequestValidator : AbstractValidator<ResendConfirmationRequest> {
+        public ResendConfirmationRequestValidator() {
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Email es requerido")
+                .EmailAddress().WithMessage("Email inválido")
+                .Matches(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                .WithMessage("El email debe tener un formato válido (ej: usuario@dominio.com)");
         }
     }
 }

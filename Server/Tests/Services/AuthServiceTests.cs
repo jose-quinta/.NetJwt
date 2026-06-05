@@ -71,6 +71,8 @@ namespace Server.Tests.UnitTests.Services {
             Assert.Null(error);
             Assert.Equal("newuser", user.Username);
             Assert.Equal("new@example.com", user.Email);
+            Assert.False(user.EmailConfirmed);
+            Assert.NotNull(user.EmailConfirmationToken);
         }
 
         [Fact]
@@ -90,6 +92,76 @@ namespace Server.Tests.UnitTests.Services {
 
             Assert.Null(response);
             Assert.Equal("Credenciales inválidas", error);
+        }
+
+        [Fact]
+        public async Task LoginAsync_WithUnconfirmedEmail_ReturnsError() {
+            var request = new LoginRequest {
+                Email = "unconfirmed@example.com",
+                Password = "password123"
+            };
+
+            var salt = new byte[128];
+            using var hmac = new System.Security.Cryptography.HMACSHA512(salt);
+            var passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes("password123"));
+
+            var mockRepo = new Mock<IRepository<User>>();
+            mockRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new User {
+                    Email = "unconfirmed@example.com",
+                    Username = "unconfirmed",
+                    PasswordHash = passwordHash,
+                    PasswordSalt = salt,
+                    EmailConfirmed = false
+                });
+
+            _mockUnitOfWork.Setup(u => u.GetRepository<User>()).Returns(mockRepo.Object);
+
+            var (response, error) = await _authService.LoginAsync(request);
+
+            Assert.Null(response);
+            Assert.Equal("Email no confirmado. Verifica tu correo electrónico.", error);
+        }
+
+        [Fact]
+        public async Task VerifyEmailAsync_WithValidToken_ConfirmsEmail() {
+            var token = "valid-token-123";
+            var user = new User {
+                Email = "test@example.com",
+                Username = "test",
+                EmailConfirmationToken = token,
+                EmailConfirmed = false,
+                PasswordHash = new byte[64],
+                PasswordSalt = new byte[128]
+            };
+
+            var mockRepo = new Mock<IRepository<User>>();
+            mockRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>()))
+                .ReturnsAsync(user);
+
+            _mockUnitOfWork.Setup(u => u.GetRepository<User>()).Returns(mockRepo.Object);
+            _mockUnitOfWork.Setup(u => u.SaveAsync()).Returns(Task.CompletedTask);
+
+            var (success, error) = await _authService.VerifyEmailAsync(token);
+
+            Assert.True(success);
+            Assert.Null(error);
+            Assert.True(user.EmailConfirmed);
+            Assert.Null(user.EmailConfirmationToken);
+        }
+
+        [Fact]
+        public async Task VerifyEmailAsync_WithInvalidToken_ReturnsError() {
+            var mockRepo = new Mock<IRepository<User>>();
+            mockRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>()))
+                .ReturnsAsync((User?)null);
+
+            _mockUnitOfWork.Setup(u => u.GetRepository<User>()).Returns(mockRepo.Object);
+
+            var (success, error) = await _authService.VerifyEmailAsync("invalid-token");
+
+            Assert.False(success);
+            Assert.Equal("Token de verificación inválido", error);
         }
     }
 }

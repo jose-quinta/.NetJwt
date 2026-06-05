@@ -17,5 +17,8 @@ namespace Server.Domain.Entities {
         public byte[]? PasswordHash { get; set; }
         public byte[]? PasswordSalt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        public bool EmailConfirmed { get; set; } = false;
+        public string? EmailConfirmationToken { get; set; }
     }
 }

@@ -5,6 +5,8 @@ Server/Application/bin/
 Server/Application/obj/
 Server/Infrastructure/bin/
 Server/Infrastructure/obj/
+Server/Tests/bin/
+Server/Tests/obj/
 Server/Api/bin/
 Server/Api/obj/
 

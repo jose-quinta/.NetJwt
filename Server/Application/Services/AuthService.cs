@@ -34,7 +34,9 @@ namespace Server.Application.Services {
                 Email = request.Email,
                 Role = "User",
                 PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt
+                PasswordSalt = passwordSalt,
+                EmailConfirmationToken = GenerateEmailConfirmationToken(),
+                EmailConfirmed = false
             };
 
             await userRepo.AddAsync(user);
@@ -48,11 +50,14 @@ namespace Server.Application.Services {
             var rtRepo = _unitOfWork.GetRepository<RefreshToken>();
 
             var user = await userRepo.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null)
+            if (user == null || user.PasswordHash == null || user.PasswordSalt == null)
                 return (null, "Credenciales inválidas");
 
             if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
                 return (null, "Credenciales inválidas");
+
+            if (!user.EmailConfirmed)
+                return (null, "Email no confirmado. Verifica tu correo electrónico.");
 
             var token = CreateToken(user);
             var refreshToken = CreateRefreshToken();
@@ -161,6 +166,48 @@ namespace Server.Application.Services {
             using var hmac = new HMACSHA512(passwordSalt);
             var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
             return computedHash.SequenceEqual(passwordHash);
+        }
+
+        public async Task<(bool Success, string? Error)> VerifyEmailAsync(string token) {
+            var userRepo = _unitOfWork.GetRepository<User>();
+
+            var user = await userRepo.FirstOrDefaultAsync(u => u.EmailConfirmationToken == token);
+            if (user == null)
+                return (false, "Token de verificación inválido");
+
+            if (user.EmailConfirmed)
+                return (false, "El email ya está confirmado");
+
+            user.EmailConfirmed = true;
+            user.EmailConfirmationToken = null;
+            await userRepo.UpdateAsync(user);
+            await _unitOfWork.SaveAsync();
+
+            return (true, null);
+        }
+
+        public async Task<string?> ResendConfirmationAsync(string email) {
+            var userRepo = _unitOfWork.GetRepository<User>();
+
+            var user = await userRepo.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+                return "El email no está registrado";
+
+            if (user.EmailConfirmed)
+                return "El email ya está confirmado";
+
+            user.EmailConfirmationToken = GenerateEmailConfirmationToken();
+            await userRepo.UpdateAsync(user);
+            await _unitOfWork.SaveAsync();
+
+            return null;
+        }
+
+        private string GenerateEmailConfirmationToken() {
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
 
         private string GetClientIpAddress() => _userContext.GetClientIp();

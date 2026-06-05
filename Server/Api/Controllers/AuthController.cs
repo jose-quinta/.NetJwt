@@ -53,7 +53,8 @@ namespace Server.Api.Controllers
                 Id = user!.Id,
                 Username = user.Username,
                 Email = user.Email,
-                Role = user.Role
+                Role = user.Role,
+                EmailConfirmationToken = user.EmailConfirmationToken
             });
         }
 
@@ -85,6 +86,36 @@ namespace Server.Api.Controllers
                 return Unauthorized(new { error });
 
             return Ok(response);
+        }
+
+        [HttpPost("VerifyEmail")]
+        public async Task<ActionResult<object>> VerifyEmail([FromBody] VerifyEmailRequest request)
+        {
+            var validator = new VerifyEmailRequestValidator();
+            var validationResult = validator.Validate(request);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+            var (success, error) = await _authService.VerifyEmailAsync(request.Token);
+            if (error != null)
+                return BadRequest(new { error });
+
+            return Ok(new { message = "Email confirmado exitosamente" });
+        }
+
+        [HttpPost("ResendConfirmation")]
+        public async Task<ActionResult<object>> ResendConfirmation([FromBody] ResendConfirmationRequest request)
+        {
+            var validator = new ResendConfirmationRequestValidator();
+            var validationResult = validator.Validate(request);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+
+            var error = await _authService.ResendConfirmationAsync(request.Email);
+            if (error != null)
+                return BadRequest(new { error });
+
+            return Ok(new { message = "Token de confirmación reenviado. Revisa tu correo electrónico." });
         }
 
         [HttpPost("Logout"), Authorize]

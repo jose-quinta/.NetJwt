@@ -12,5 +12,7 @@ namespace Server.Application.Interfaces
         Task<(User? User, string? Error)> RegisterAsync(RegisterRequest request);
         Task<(AuthResponse? Response, string? Error)> LoginAsync(LoginRequest request);
         Task<(AuthResponse? Response, string? Error)> RefreshTokenAsync(RefreshTokenRequest request);
+        Task<(bool Success, string? Error)> VerifyEmailAsync(string token);
+        Task<string?> ResendConfirmationAsync(string email);
     }
 }

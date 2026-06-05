@@ -30,5 +30,16 @@ namespace Server.Application.DTOs
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string? EmailConfirmationToken { get; set; }
+    }
+
+    public class VerifyEmailRequest
+    {
+        public string Token { get; set; } = string.Empty;
+    }
+
+    public class ResendConfirmationRequest
+    {
+        public string Email { get; set; } = string.Empty;
     }
 }

@@ -31,7 +31,8 @@ namespace Server.Infrastructure.Persistence {
                 Role = "Admin",
                 PasswordHash = passwordHash,
                 PasswordSalt = passwordSalt,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                EmailConfirmed = true
             };
 
             await userRepo.AddAsync(admin);
